@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            background: linear-gradient(120deg, hsl(240, 100%, 20%), hsl(240, 100%, 10%));
+        }
+
+        .box {
+            background-color: #002663ce;
+            color: #b8a885;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            transition: transform 0.1s;
+            transform-style: preserve-3d;
+            max-width: 150px;
+            border-width: 5px;
+            border-color: #ffffff;
+            border-style: solid;
+            animation: grow 2s forwards;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        @keyframes grow {
+            to {
+                max-width: 300px;
+                padding: 20px;
+            }
+        }
+
+        .box::before,
+        .box::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background-color: #ffffff;
+        }
+
+        .box::before {
+            top: 50%;
+            left: 0;
+        }
+
+        .box::after {
+            top: 50%;
+            left: 0;
+            transform: translateY(-50%);
+        }
+
+        .snowflake {
+            position: absolute;
+            top: -10px;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.8;
+            pointer-events: none;
+            animation: fall linear infinite;
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(100vh);
+            }
+        }
+
+        .button {
+            position: absolute;
+            bottom: 20px;
+            padding: 10px 20px;
+            background-color: #b8a885;
+            color: #002663;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        @keyframes turnIntoLine {
+            from {
+                max-width: 300px;
+                padding: 20px;
+                border-width: 5px;
+                transform: rotateX(0deg) rotateY(0deg) scale(1);
+            }
+
+            to {
+                max-width: 2px;
+                padding: 0;
+                border-width: 0;
+                transform: rotateX(0deg) rotateY(0deg) scale(1);
+            }
+        }
+
+        .box.turn-into-line {
+            animation: turnIntoLine 2s ease forwards;
+        }
+
+        @keyframes turnIntoBox {
+            from {
+                max-width: 2px;
+                padding: 0;
+                border-width: 0;
+                transform: rotateX(0deg) rotateY(0deg) scale(1);
+            }
+
+            to {
+                max-width: 300px;
+                padding: 20px;
+                border-width: 5px;
+            }
+        }
+
+        .box.turnIntoBox {
+            animation: turnIntoBox 2s ease forwards;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="box turn-into-line" id="box">
+        <h1>Random title here</h1>
+        <p>random desc here</p>
+    </div>
+    <button class="button" id="animateButton">Go to Next Page</button>
+
+    <script>
+        function createSnowflake(left, width, duration, top = 0) {
+            const snowflake = document.createElement('div');
+            snowflake.classList.add('snowflake');
+            snowflake.style.left = `${left}px`;
+            snowflake.style.width = `${width}px`;
+            snowflake.style.height = snowflake.style.width;
+            snowflake.style.animationDuration = `${duration}s`;
+            snowflake.style.top = `${top}px`;
+            document.body.appendChild(snowflake);
+
+            setTimeout(() => {
+                snowflake.remove();
+            }, duration * 1000);
+        }
+
+        function generateSnowflakes() {
+            setInterval(() => {
+                const left = Math.random() * window.innerWidth;
+                const width = Math.random() * 10 + 5;
+                const duration = Math.random() * 3 + 2;
+                createSnowflake(left, width, duration);
+                saveSnowflakes();
+            }, 400);
+        }
+
+        function saveSnowflakes() {
+            const snowflakes = [];
+            document.querySelectorAll('.snowflake').forEach(snowflake => {
+                const rect = snowflake.getBoundingClientRect();
+                snowflakes.push({
+                    left: rect.left,
+                    width: parseFloat(snowflake.style.width),
+                    duration: parseFloat(snowflake.style.animationDuration),
+                    top: rect.top
+                });
+            });
+            localStorage.setItem('snowflakes', JSON.stringify(snowflakes));
+        }
+
+        function loadSnowflakes() {
+            const snowflakes = JSON.parse(localStorage.getItem('snowflakes'));
+            if (snowflakes) {
+                snowflakes.forEach(snowflake => {
+                    createSnowflake(snowflake.left, snowflake.width, snowflake.duration, snowflake.top);
+                });
+            }
+            generateSnowflakes();
+        }
+
+        const box = document.getElementById('box');
+        const button = document.getElementById('animateButton');
+
+        document.addEventListener('DOMContentLoaded', () => {
+            box.classList.add('turnIntoBox');
+        });
+
+        document.addEventListener('mousemove', (event) => {
+            const rect = box.getBoundingClientRect();
+            const boxCenterX = rect.left + rect.width / 2;
+            const boxCenterY = rect.top + rect.height / 2;
+            const deltaX = event.clientX - boxCenterX;
+            const deltaY = event.clientY - boxCenterY;
+            const rotateX = deltaY / -35;
+            const rotateY = deltaX / -35;
+            box.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.1)`;
+
+            const mouseX = event.clientX / window.innerWidth;
+            const mouseY = event.clientY / window.innerHeight;
+            const blue = 240;
+            const lightness = 10 + mouseY * 10;
+            document.body.style.background = `linear-gradient(120deg, hsl(${blue}, 100%, ${lightness}%), hsl(${blue}, 100%, ${lightness - 10}%))`;
+        });
+
+        document.addEventListener('mouseenter', () => {
+            box.style.transform = 'rotateX(0deg) rotateY(0deg) scale(1.1)';
+        });
+
+        document.addEventListener('mouseleave', () => {
+            box.style.transform = 'rotateX(0deg) rotateY(0deg) scale(1)';
+        });
+
+        button.addEventListener('click', () => {
+            box.classList.remove('turnIntoBox');
+            setTimeout(() => {
+                window.location.href = 'index2.html';
+            }, 2000);
+        });
+
+        loadSnowflakes();
+
+        setInterval(() => {
+            localStorage.removeItem('snowflakes');
+            saveSnowflakes();
+        }, 1000);
+    </script>
+</body>
+
+</html>
