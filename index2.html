@@ -37,27 +37,6 @@
                 padding: 20px;
             }
         }
-
-        .box::before,
-        .box::after {
-            content: '';
-            position: absolute;
-            width: 100%;
-            height: 2px;
-            background-color: #ffffff;
-        }
-
-        .box::before {
-            top: 50%;
-            left: 0;
-        }
-
-        .box::after {
-            top: 50%;
-            left: 0;
-            transform: translateY(-50%);
-        }
-
         .snowflake {
             position: absolute;
             top: -10px;
@@ -75,7 +54,7 @@
         }
 
         .button {
-            position: absolute;
+            position: relative;
             bottom: 20px;
             padding: 10px 20px;
             background-color: #b8a885;
@@ -84,6 +63,8 @@
             border-radius: 5px;
             cursor: pointer;
             font-size: 16px;
+            margin-top: 20px;
+            padding: 10px 20px;
         }
 
         @keyframes turnIntoLine {
@@ -131,10 +112,8 @@
     <div class="box turn-into-line" id="box">
         <h1>Random title here</h1>
         <p>random desc here</p>
+        <button class="button" id="animateButton">Go Back</button>
     </div>
-
-    <button class="button" id="animateButton">Go Back</button>
-
     <script>
         const box = document.getElementById('box');
         const button = document.getElementById('animateButton');
